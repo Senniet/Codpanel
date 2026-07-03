@@ -1,13 +1,25 @@
-SERVER_NAME = "COD1 Server"
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
-SERVER_PATH = "/data/myserver"
 
-SERVER_BINARY = "/data/myserver/cod_lnxded"
+class Settings(BaseSettings):
+    APP_NAME: str = "CodPanel"
+    APP_VERSION: str = "0.1.0"
 
-SERVER_CONFIG = "/data/myserver/myserver.cfg"
+    SERVER_NAME: str = "COD1 Server"
 
-SERVER_USER = "codserver"
+    SERVER_PATH: str = "/data/myserver"
+    SERVER_BINARY: str = "/data/myserver/cod_lnxded"
+    SERVER_CONFIG: str = "myserver.cfg"
 
-SERVER_IP = "172.16.0.4"
+    SERVER_IP: str = "172.16.0.4"
+    SERVER_PORT: int = 28960
 
-SERVER_PORT = 28960
+    SERVER_USER: str = "codserver"
+
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        case_sensitive=True,
+    )
+
+
+settings = Settings()

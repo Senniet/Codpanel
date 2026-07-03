@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="card">
+
+    <h2 id="serverName">Server</h2>
+
+    <table>
+
+        <tr>
+            <td>Status</td>
+            <td id="status">...</td>
+        </tr>
+
+        <tr>
+            <td>PID</td>
+            <td id="pid">...</td>
+        </tr>
+
+        <tr>
+            <td>CPU</td>
+            <td id="cpu">...</td>
+        </tr>
+
+        <tr>
+            <td>RAM</td>
+            <td id="ram">...</td>
+        </tr>
+
+        <tr>
+            <td>Uptime</td>
+            <td id="uptime">...</td>
+        </tr>
+
+    </table>
+
+    <div style="margin-top:20px">
+
+        <button onclick="serverStart()">? Start</button>
+
+        <button onclick="serverStop()">¦ Stop</button>
+
+        <button onclick="serverRestart()">? Restart</button>
+
+    </div>
+
+</div>
+
+<script src="/static/js/dashboard.js"></script>
+
+{% endblock %}

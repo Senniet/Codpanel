@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="nl">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>{{ title }}</title>
+
+    <link rel="stylesheet" href="/static/css/style.css">
+
+</head>
+
+<body>
+
+<div class="layout">
+
+    <aside class="sidebar">
+
+        <div class="logo">
+            <h1>CodPanel</h1>
+            <span>v{{ version }}</span>
+        </div>
+
+        <nav>
+
+            <a class="active" href="/">?? Dashboard</a>
+
+            <a href="#">?? Server</a>
+
+            <a href="#">?? Console</a>
+
+            <a href="#">?? Players</a>
+
+            <a href="#">?? Maps</a>
+
+            <a href="#">?? Logs</a>
+
+            <a href="#">? Settings</a>
+
+        </nav>
+
+    </aside>
+
+    <main class="content">
+
+        <header class="topbar">
+
+            <div>
+                <h2>{{ title }}</h2>
+            </div>
+
+            <div id="serverBadge" class="badge offline">
+                Offline
+            </div>
+
+        </header>
+
+        {% block content %}
+        {% endblock %}
+
+    </main>
+
+</div>
+
+</body>
+
+</html>
