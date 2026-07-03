@@ -1,20 +1,2 @@
-export interface User {
-  id: number
-  username: string
-  email?: string
-  token?: string
-}
-
-export interface Server {
-  id: number | string
-  name: string
-  ip: string
-  status?: 'online' | 'offline' | 'maintenance'
-  players?: number
-}
-
-export interface ApiResponse<T = any> {
-  data?: T
-  success?: boolean
-  message?: string
-}
+// index of types is deprecated — please import specific types from their files
+// This file remains for compatibility but should not be used in new code.

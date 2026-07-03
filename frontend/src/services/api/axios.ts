@@ -1,5 +1,5 @@
 import axios, { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios'
-import type { ApiResponse } from '@/types'
+import type { ApiResponse } from '@/types/api'
 
 const baseURL = import.meta.env.VITE_API_BASE ?? '/api'
 
@@ -15,7 +15,7 @@ const api: AxiosInstance = axios.create({
 // Request interceptor — useful for adding headers or logging
 api.interceptors.request.use(
   (config: AxiosRequestConfig) => {
-    // Example: we could attach a request id or other headers here
+    // Could add request ids, auth headers (not needed for HttpOnly cookie) etc.
     return config
   },
   (error: AxiosError) => {
@@ -23,17 +23,15 @@ api.interceptors.request.use(
   }
 )
 
-// Response interceptor — global error handling and 401 redirect
+// Response interceptor — global error handling (do NOT perform navigation here)
 api.interceptors.response.use(
   (response: AxiosResponse) => response,
   (error: AxiosError) => {
     if (error.response) {
       const status = error.response.status
-      // Global 401 handler — redirect to login (backend manages the HttpOnly cookie)
+      // Emit an event for 401 so the AuthStore can handle redirects/cleanup
       if (status === 401) {
-        const redirect = window.location.pathname + window.location.search
-        window.location.href = `/login?redirect=${encodeURIComponent(redirect)}`
-        return Promise.reject(error)
+        try { window.dispatchEvent(new CustomEvent('unauthenticated')) } catch (e) {}
       }
 
       // Try to surface server-provided error message
@@ -49,14 +47,13 @@ api.interceptors.response.use(
 
 export default api
 
-// Helper typed wrappers (optional)
+// Helper typed wrappers
 export async function get<T = any>(url: string, config?: AxiosRequestConfig): Promise<T> {
   const res = await api.get<ApiResponse<T>>(url, config)
-  // If backend returns { data: ... } normalize, otherwise return raw
-  return (res.data as unknown as any).data ?? (res.data as unknown as T)
+  return (res.data && (res.data as any).data) ?? (res.data as unknown as T)
 }
 
 export async function post<T = any>(url: string, payload?: any, config?: AxiosRequestConfig): Promise<T> {
   const res = await api.post<ApiResponse<T>>(url, payload, config)
-  return (res.data as unknown as any).data ?? (res.data as unknown as T)
+  return (res.data && (res.data as any).data) ?? (res.data as unknown as T)
 }

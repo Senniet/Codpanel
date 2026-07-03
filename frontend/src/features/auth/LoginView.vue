@@ -34,9 +34,13 @@ const route = useRoute()
 const auth = useAuthStore()
 
 const submit = async () => {
-  // For now: fake login — set user locally. Replace with authService.login when backend available.
-  auth.setUser({ id: 1, username: username.value })
   const redirect = (route.query.redirect as string) || '/dashboard'
-  await router.replace(redirect)
+  try {
+    await auth.login(username.value, password.value, redirect)
+    // auth.login navigates via window.location.href on success
+  } catch (e: any) {
+    // Show a basic error; in a real app you'd use a toast or inline error
+    alert(e?.message || 'Login failed')
+  }
 }
 </script>

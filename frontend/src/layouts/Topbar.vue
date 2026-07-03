@@ -9,20 +9,26 @@
     <div class="flex items-center space-x-3">
       <button @click="toggleDark" class="px-3 py-1 rounded bg-gray-100 dark:bg-gray-700">Toggle</button>
       <div class="w-8 h-8 rounded bg-gray-200 dark:bg-gray-600"></div>
+      <button @click="logout" class="px-3 py-1 rounded bg-red-600 text-white">Logout</button>
     </div>
   </header>
 </template>
 
 <script setup lang="ts">
 import { useUiStore } from '@/app/stores/ui'
-import { watch } from 'vue'
 import { useDark } from '@/composables/useDarkMode'
+import { useAuthStore } from '@/app/stores/auth'
 
 const ui = useUiStore()
 const { isDark, toggle } = useDark()
+const auth = useAuthStore()
 
 const toggleDark = () => {
   toggle()
   ui.dark = isDark.value
+}
+
+const logout = async () => {
+  await auth.logout()
 }
 </script>
