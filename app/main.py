@@ -36,6 +36,13 @@ app.mount("/static", StaticFiles(directory="app/static"), name="static")
 
 templates = Jinja2Templates(directory="app/templates")
 
+# Register the API v1 endpoints first so they take precedence over legacy routes
+app.include_router(
+    api_v1_router,
+    prefix="/api/v1",
+    tags=["APIv1"],
+)
+
 app.include_router(
     system.router,
     prefix="/api/v1",
@@ -46,13 +53,6 @@ app.include_router(
     server.router,
     prefix="/api/v1",
     tags=["Server"],
-)
-
-# Register the mocked API v1 endpoints under /api/v1
-app.include_router(
-    api_v1_router,
-    prefix="/api/v1",
-    tags=["APIv1"],
 )
 
 
