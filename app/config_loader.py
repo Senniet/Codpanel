@@ -40,9 +40,8 @@ class ConfigLoader:
     """
 
     def __init__(self, path: Optional[Path] = None) -> None:
-        self._path = (
-            Path(path) if path is not None else Path(__file__).parent.parent / "config" / "servers.yaml"
-        )
+        # Default to app/config/servers.yaml relative to this module's package
+        self._path = Path(path) if path is not None else Path(__file__).parent / "config" / "servers.yaml"
         self._servers: List[ServerConfig] = []
         self._loaded: bool = False
 
@@ -141,4 +140,3 @@ class ConfigLoader:
 
 # Module-level loader instance used by the application. Importing this module
 # does not perform I/O; the application must explicitly call config_loader.load()
-config_loader = ConfigLoader()
