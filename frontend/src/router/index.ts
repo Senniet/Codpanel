@@ -4,7 +4,7 @@ import type { RouteLocationNormalized } from 'vue-router'
 import LoginView from '@/features/auth/LoginView.vue'
 import DashboardView from '@/features/dashboard/DashboardView.vue'
 import ServersView from '@/features/servers/ServersView.vue'
-import ServerDetailsView from '@/features/servers/ServerDetailsView.vue'
+// Server details layout is lazy loaded below
 import SettingsView from '@/features/settings/SettingsView.vue'
 
 const routes = [
@@ -25,9 +25,18 @@ const routes = [
   {
     path: '/servers/:id',
     name: 'ServerDetails',
-    component: ServerDetailsView,
+    component: () => import('@/features/servers/ServerDetailsLayout.vue'),
     meta: { requiresAuth: true },
-    props: true
+    props: true,
+    children: [
+      { path: '', redirect: { name: 'ServerOverview' } },
+      { path: 'overview', name: 'ServerOverview', component: () => import('@/features/servers/details/OverviewTab.vue'), props: true },
+      { path: 'console', name: 'ServerConsole', component: () => import('@/features/servers/details/ConsoleTab.vue'), props: true },
+      { path: 'files', name: 'ServerFiles', component: () => import('@/features/servers/details/FilesTab.vue'), props: true },
+      { path: 'configuration', name: 'ServerConfiguration', component: () => import('@/features/servers/details/ConfigurationTab.vue'), props: true },
+      { path: 'backups', name: 'ServerBackups', component: () => import('@/features/servers/details/BackupsTab.vue'), props: true },
+      { path: 'metrics', name: 'ServerMetrics', component: () => import('@/features/servers/details/MetricsTab.vue'), props: true }
+    ]
   },
   {
     path: '/settings',
