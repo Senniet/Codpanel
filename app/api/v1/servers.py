@@ -16,7 +16,7 @@ class Server(BaseModel):
     ram: int
     status: str
 
-class ActionRequest(BaseModel):
+class PowerRequest(BaseModel):
     action: str
 
 class FileEntry(BaseModel):
@@ -55,8 +55,8 @@ async def get_server(server_id: int):
             return s
     raise HTTPException(status_code=404, detail='Server not found')
 
-@router.post('/servers/{server_id}/actions')
-async def perform_action(server_id: int, payload: ActionRequest):
+@router.post('/servers/{server_id}/power')
+async def perform_power(server_id: int, payload: PowerRequest):
     # Mock: accept action but do not change state
     # Validate server exists
     if not any(s.id == server_id for s in MOCK_SERVERS):

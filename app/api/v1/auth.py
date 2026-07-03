@@ -15,9 +15,18 @@ class UserOut(BaseModel):
 
 @router.post('/auth/login', response_model=UserOut)
 async def login(payload: LoginRequest, response: Response):
-    # Mocked authentication: accept any username/password
-    # Set HttpOnly session cookie
-    response.set_cookie(key='session', value='mock-session', httponly=True, samesite='lax')
+    # Mocked authentication: only admin/admin is accepted
+    if not (payload.username == 'admin' and payload.password == 'admin'):
+        raise HTTPException(status_code=401, detail='Invalid credentials')
+
+    # Set HttpOnly session cookie (mock)
+    response.set_cookie(
+        key='session',
+        value='mock-session',
+        httponly=True,
+        samesite='lax',
+        secure=False,
+    )
     return UserOut(id=1, username=payload.username, email=f"{payload.username}@example.com")
 
 @router.get('/auth/me', response_model=UserOut)

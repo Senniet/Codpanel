@@ -5,6 +5,7 @@ from fastapi.templating import Jinja2Templates
 
 from app.api import server
 from app.api import system
+from app.api.v1 import router as api_v1_router
 
 app = FastAPI(
     title="CodPanel",
@@ -27,6 +28,13 @@ app.include_router(
     server.router,
     prefix="/api/v1",
     tags=["Server"],
+)
+
+# Register the mocked API v1 endpoints under /api/v1
+app.include_router(
+    api_v1_router,
+    prefix="/api/v1",
+    tags=["APIv1"],
 )
 
 
