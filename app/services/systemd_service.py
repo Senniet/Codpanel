@@ -11,17 +11,19 @@ from __future__ import annotations
 import logging
 import shutil
 import subprocess
-from datetime import datetime
 from typing import Optional
 
 logger = logging.getLogger(__name__)
 
-_SYSTEMCTL = shutil.which("systemctl")
-
 
 def _has_systemctl() -> bool:
-    """Return True if systemctl is available on this host."""
-    return bool(_SYSTEMCTL)
+    """Return True if systemctl is available on this host.
+
+    Do not cache the result at module import time so unit tests can patch
+    shutil.which() and simulate environments with or without systemctl.
+    Calling shutil.which() is inexpensive and keeps detection correct.
+    """
+    return shutil.which("systemctl") is not None
 
 
 def unit_exists(unit: str, timeout: float = 2.0) -> bool:
@@ -47,7 +49,6 @@ def unit_exists(unit: str, timeout: float = 2.0) -> bool:
         logger.exception("unit_exists: subprocess failed for unit=%s: %s", unit, exc)
         return False
 
-    # systemctl returns non-zero for inactive units; interpret stderr for "could not be found"
     stderr = (proc.stderr or "").lower()
     stdout = proc.stdout or ""
 
