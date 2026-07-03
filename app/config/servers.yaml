@@ -1,0 +1,10 @@
+servers:
+  - id: cod1
+    name: "Call of Duty 1"
+    systemd_unit: "cod1.service"
+    install_path: "/opt/cod1"
+    executable: "/opt/cod1/cod_lnxded"
+    config_path: "/opt/cod1/main/server.cfg"
+    rcon_host: "127.0.0.1"
+    rcon_port: 28960
+    rcon_password: ""
