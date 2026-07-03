@@ -83,7 +83,8 @@ class ConfigLoader:
 
             try:
                 substituted = self._substitute_env(entry)
-                server = ServerConfig.parse_obj(substituted)
+                # Pydantic v2: use model_validate instead of parse_obj
+                server = ServerConfig.model_validate(substituted)
                 parsed.append(server)
             except ValidationError as ve:
                 # Attempt to extract an id for better logging
