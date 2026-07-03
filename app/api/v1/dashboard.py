@@ -1,34 +1,9 @@
 from fastapi import APIRouter
-from pydantic import BaseModel
 from typing import List
 from datetime import datetime
+from .schemas import DashboardOverview, ActivityItem, QuickAction, LogEntry
 
 router = APIRouter()
-
-class DashboardOverview(BaseModel):
-    totalServers: int
-    onlineServers: int
-    offlineServers: int
-    connectedPlayers: int
-    cpuUsagePercent: int
-    memoryUsagePercent: int
-
-class ActivityItem(BaseModel):
-    id: int
-    type: str
-    message: str
-    created_at: datetime
-
-class QuickAction(BaseModel):
-    id: int
-    name: str
-    description: str
-
-class LogEntry(BaseModel):
-    id: int
-    level: str
-    message: str
-    timestamp: datetime
 
 @router.get('/dashboard/overview', response_model=DashboardOverview)
 async def overview():
