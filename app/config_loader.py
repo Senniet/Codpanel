@@ -140,3 +140,4 @@ class ConfigLoader:
 
 # Module-level loader instance used by the application. Importing this module
 # does not perform I/O; the application must explicitly call config_loader.load()
+config_loader = ConfigLoader()
