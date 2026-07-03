@@ -12,3 +12,9 @@ export interface Server {
   status?: 'online' | 'offline' | 'maintenance'
   players?: number
 }
+
+export interface ApiResponse<T = any> {
+  data?: T
+  success?: boolean
+  message?: string
+}

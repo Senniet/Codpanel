@@ -1,3 +1,5 @@
+import { ref } from 'vue'
+
 export function useDark() {
   const isDark = ref(document.documentElement.classList.contains('dark'))
 
