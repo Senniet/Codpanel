@@ -41,7 +41,22 @@ api.interceptors.response.use(
         }
       }
 
-      const serverMessage = (error.response.data && (error.response.data as any).detail) || (error.response.data && (error.response.data as any).message)
+      // Robust server message extraction:
+      // FastAPI often returns { "detail": { "code": "...", "message": "..." } } for HTTPException.
+      // Normalize to a string message for UI consumption.
+      let serverMessage: string | undefined = undefined
+      const data = (error.response.data ?? {}) as any
+
+      if (typeof data === 'string') {
+        serverMessage = data
+      } else if (data.detail) {
+        if (typeof data.detail === 'string') serverMessage = data.detail
+        else if (typeof data.detail === 'object' && data.detail.message) serverMessage = data.detail.message
+        else if (typeof data.detail === 'object' && data.detail.code) serverMessage = data.detail.code
+      } else if (data.message && typeof data.message === 'string') {
+        serverMessage = data.message
+      }
+
       const message = serverMessage || error.message || 'An unexpected error occurred'
       return Promise.reject(new Error(message))
     }

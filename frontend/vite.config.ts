@@ -16,8 +16,14 @@ export default ({ mode }) => {
     },
     server: {
       proxy: {
-        // Proxy all /api requests to the backend dev server. The target can be configured via VITE_BACKEND.
+        // Proxy /api and /api/v1 requests to the backend dev server. The target can be configured via VITE_BACKEND.
         '/api': {
+          target: backend,
+          changeOrigin: true,
+          secure: false,
+          ws: true
+        },
+        '/api/v1': {
           target: backend,
           changeOrigin: true,
           secure: false,

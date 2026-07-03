@@ -13,8 +13,14 @@
               <label class="block text-sm mb-1">Password</label>
               <BaseInput v-model="password" type="password" />
             </div>
+
+            <div v-if="error" class="mb-4 text-sm text-red-600">{{ error }}</div>
+
             <div class="flex items-center justify-between">
-              <BaseButton type="submit">Sign in</BaseButton>
+              <BaseButton type="submit" :disabled="loading">
+                <span v-if="loading">Signing in…</span>
+                <span v-else>Sign in</span>
+              </BaseButton>
             </div>
           </form>
         </template>
@@ -34,18 +40,24 @@ import BaseButton from '@/components/base/BaseButton.vue'
 const appName = import.meta.env.VITE_APP_NAME || 'CodPanel'
 const username = ref('')
 const password = ref('')
+const error = ref('')
+const loading = ref(false)
 
 const router = useRouter()
 const route = useRoute()
 const auth = useAuthStore()
 
 const submit = async () => {
+  error.value = ''
+  loading.value = true
   const redirect = (route.query.redirect as string) || '/dashboard'
   try {
     await auth.login(username.value, password.value, redirect)
     // auth.login will navigate via router
   } catch (e: any) {
-    alert(e?.message || 'Login failed')
+    error.value = e?.message || 'Login failed'
+  } finally {
+    loading.value = false
   }
 }
 </script>
