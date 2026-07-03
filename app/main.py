@@ -1,3 +1,5 @@
+import os
+from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
@@ -6,12 +8,28 @@ from fastapi.templating import Jinja2Templates
 from app.api import server
 from app.api import system
 from app.api.v1 import router as api_v1_router
+from app.config_loader import config_loader
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Load server configuration once during application startup. The loader
+    # keeps the parsed servers in memory and supports reload() for future use.
+    try:
+        config_loader.load()
+    except Exception:
+        # Config loader handles its own errors and logs; safeguard here so the
+        # lifespan does not raise and prevent the app from starting.
+        pass
+    yield
+
 
 app = FastAPI(
     title="CodPanel",
     version="0.2.0",
     docs_url="/api/docs",
     redoc_url=None,
+    lifespan=lifespan,
 )
 
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
