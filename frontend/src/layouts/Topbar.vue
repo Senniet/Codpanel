@@ -7,9 +7,9 @@
       <div class="text-lg font-semibold">Dashboard</div>
     </div>
     <div class="flex items-center space-x-3">
-      <button @click="toggleDark" class="px-3 py-1 rounded bg-gray-100 dark:bg-gray-700">Toggle</button>
+      <BaseButton @click="toggleDark">Toggle</BaseButton>
       <div class="w-8 h-8 rounded bg-gray-200 dark:bg-gray-600"></div>
-      <button @click="logout" class="px-3 py-1 rounded bg-red-600 text-white">Logout</button>
+      <BaseButton variant="danger" @click="logout">Logout</BaseButton>
     </div>
   </header>
 </template>
@@ -18,6 +18,7 @@
 import { useUiStore } from '@/app/stores/ui'
 import { useDark } from '@/composables/useDarkMode'
 import { useAuthStore } from '@/app/stores/auth'
+import BaseButton from '@/components/base/BaseButton.vue'
 
 const ui = useUiStore()
 const { isDark, toggle } = useDark()

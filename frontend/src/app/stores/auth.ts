@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import type { User } from '@/types/user'
 import { authService } from '@/services/auth.service'
+import router from '@/router'
 
 export const useAuthStore = defineStore('auth', () => {
   const user = ref<User | null>(null)
@@ -16,11 +17,11 @@ export const useAuthStore = defineStore('auth', () => {
     try {
       const u = await authService.login(username, password)
       setUser(u)
-      // After successful login, navigate to redirect if provided
+      // After successful login, navigate via router
       if (redirect) {
-        window.location.href = redirect
+        router.replace(redirect)
       } else {
-        window.location.href = '/dashboard'
+        router.replace({ name: 'Dashboard' })
       }
       return u
     } finally {
@@ -33,12 +34,12 @@ export const useAuthStore = defineStore('auth', () => {
     try {
       await authService.logout()
     } catch (e) {
-      // ignore
+      // ignore errors
     }
     setUser(null)
     // Redirect to login
-    const redirect = window.location.pathname
-    window.location.href = `/login?redirect=${encodeURIComponent(redirect)}`
+    const redirect = router.currentRoute.value.fullPath
+    router.replace({ name: 'Login', query: { redirect } })
     loading.value = false
   }
 
@@ -56,18 +57,10 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  function handleUnauthenticated() {
+  async function handleUnauthenticated() {
     setUser(null)
-    // Perform redirect to login preserving current location
-    const redirect = window.location.pathname + window.location.search
-    window.location.href = `/login?redirect=${encodeURIComponent(redirect)}`
-  }
-
-  // Attach global listener for unauthenticated events emitted by the API client
-  if (typeof window !== 'undefined') {
-    window.addEventListener('unauthenticated', () => {
-      handleUnauthenticated()
-    })
+    const redirect = router.currentRoute.value.fullPath
+    await router.replace({ name: 'Login', query: { redirect } })
   }
 
   return {

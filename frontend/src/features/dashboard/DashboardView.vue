@@ -1,5 +1,5 @@
 <template>
-  <DashboardLayout>
+  <AppLayout>
     <template #default>
       <div class="p-6">
         <h1 class="text-2xl font-semibold mb-4">Welcome back</h1>
@@ -16,10 +16,10 @@
         </div>
       </div>
     </template>
-  </DashboardLayout>
+  </AppLayout>
 </template>
 
 <script setup lang="ts">
-import DashboardLayout from '@/layouts/DashboardLayout.vue'
+import AppLayout from '@/layouts/AppLayout.vue'
 import BaseCard from '@/components/base/BaseCard.vue'
 </script>

@@ -1,7 +1,7 @@
 <template>
   <aside class="w-64 bg-white dark:bg-gray-800 border-r dark:border-gray-700 min-h-screen p-4">
     <div class="mb-6">
-      <div class="text-xl font-bold">CodPanel</div>
+      <div class="text-xl font-bold">{{ appName }}</div>
       <div class="text-xs text-gray-500">Admin</div>
     </div>
 
@@ -14,4 +14,6 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
+const appName = import.meta.env.VITE_APP_NAME || 'CodPanel'
 </script>

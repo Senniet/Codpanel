@@ -1,22 +1,24 @@
 <template>
   <div class="min-h-screen flex items-center justify-center px-4">
     <div class="w-full max-w-md">
-      <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-        <h2 class="text-2xl font-semibold mb-4">Sign in to CodPanel</h2>
-        <form @submit.prevent="submit">
-          <div class="mb-4">
-            <label class="block text-sm mb-1">Username</label>
-            <input v-model="username" type="text" class="w-full px-3 py-2 border rounded bg-gray-50 dark:bg-gray-700" />
-          </div>
-          <div class="mb-4">
-            <label class="block text-sm mb-1">Password</label>
-            <input v-model="password" type="password" class="w-full px-3 py-2 border rounded bg-gray-50 dark:bg-gray-700" />
-          </div>
-          <div class="flex items-center justify-between">
-            <button class="px-4 py-2 bg-blue-600 text-white rounded">Sign in</button>
-          </div>
-        </form>
-      </div>
+      <BaseCard>
+        <template #default>
+          <h2 class="text-2xl font-semibold mb-4">Sign in to {{ appName }}</h2>
+          <form @submit.prevent="submit">
+            <div class="mb-4">
+              <label class="block text-sm mb-1">Username</label>
+              <BaseInput v-model="username" type="text" />
+            </div>
+            <div class="mb-4">
+              <label class="block text-sm mb-1">Password</label>
+              <BaseInput v-model="password" type="password" />
+            </div>
+            <div class="flex items-center justify-between">
+              <BaseButton type="submit">Sign in</BaseButton>
+            </div>
+          </form>
+        </template>
+      </BaseCard>
     </div>
   </div>
 </template>
@@ -25,7 +27,11 @@
 import { ref } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/app/stores/auth'
+import BaseCard from '@/components/base/BaseCard.vue'
+import BaseInput from '@/components/base/BaseInput.vue'
+import BaseButton from '@/components/base/BaseButton.vue'
 
+const appName = import.meta.env.VITE_APP_NAME || 'CodPanel'
 const username = ref('')
 const password = ref('')
 
@@ -37,9 +43,8 @@ const submit = async () => {
   const redirect = (route.query.redirect as string) || '/dashboard'
   try {
     await auth.login(username.value, password.value, redirect)
-    // auth.login navigates via window.location.href on success
+    // auth.login will navigate via router
   } catch (e: any) {
-    // Show a basic error; in a real app you'd use a toast or inline error
     alert(e?.message || 'Login failed')
   }
 }

@@ -12,10 +12,9 @@ const api: AxiosInstance = axios.create({
   }
 })
 
-// Request interceptor — useful for adding headers or logging
+// Request interceptor
 api.interceptors.request.use(
   (config: AxiosRequestConfig) => {
-    // Could add request ids, auth headers (not needed for HttpOnly cookie) etc.
     return config
   },
   (error: AxiosError) => {
@@ -23,24 +22,30 @@ api.interceptors.request.use(
   }
 )
 
-// Response interceptor — global error handling (do NOT perform navigation here)
+// Response interceptor — do NOT navigate here. Instead, delegate to AuthStore handler when 401 occurs.
 api.interceptors.response.use(
   (response: AxiosResponse) => response,
-  (error: AxiosError) => {
+  async (error: AxiosError) => {
     if (error.response) {
       const status = error.response.status
-      // Emit an event for 401 so the AuthStore can handle redirects/cleanup
+      // If 401, let the AuthStore handle unauthenticated state (clear user and navigate via router)
       if (status === 401) {
-        try { window.dispatchEvent(new CustomEvent('unauthenticated')) } catch (e) {}
+        try {
+          const mod = await import('@/app/stores/auth')
+          const { useAuthStore } = mod
+          const auth = useAuthStore()
+          // Call store handler (it will perform router navigation)
+          await auth.handleUnauthenticated()
+        } catch (e) {
+          // ignore errors from handler
+        }
       }
 
-      // Try to surface server-provided error message
       const serverMessage = (error.response.data && (error.response.data as any).detail) || (error.response.data && (error.response.data as any).message)
       const message = serverMessage || error.message || 'An unexpected error occurred'
       return Promise.reject(new Error(message))
     }
 
-    // Network or other errors
     return Promise.reject(error)
   }
 )
