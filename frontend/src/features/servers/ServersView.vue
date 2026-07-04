@@ -21,11 +21,38 @@
         </div>
 
         <div v-if="loading" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          <div v-for="i in 6" :key="i" class="h-40 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
+          <div v-for="i in 6" :key="i" class="p-4 bg-white dark:bg-gray-800 rounded shadow">
+            <div class="flex items-start justify-between">
+              <div class="flex-1 pr-2 space-y-2">
+                <div class="h-5 w-2/3 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
+                <div class="h-4 w-1/2 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
+                <div class="h-4 w-1/3 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
+                <div class="grid grid-cols-2 gap-2 mt-2">
+                  <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
+                  <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
+                  <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
+                  <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
+                </div>
+              </div>
+              <div class="space-y-2 shrink-0">
+                <div class="h-5 w-16 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
+                <div class="h-7 w-16 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
+                <div class="h-7 w-16 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
+              </div>
+            </div>
+          </div>
         </div>
 
         <div v-else>
-          <div v-if="servers.length === 0" class="text-sm text-gray-500">No servers found.</div>
+          <div v-if="servers.length === 0" class="flex flex-col items-center justify-center py-16 text-center">
+            <div class="text-4xl mb-4">🖥️</div>
+            <div class="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-1">No servers found</div>
+            <div class="text-sm text-gray-500 dark:text-gray-400">
+              No servers match your current filters.
+              <span v-if="!q && !status">Configure servers in <router-link to="/settings" aria-label="Configure servers in Settings" class="underline text-blue-500">Settings</router-link> to get started.</span>
+              <span v-else>Try clearing your search or status filter.</span>
+            </div>
+          </div>
 
           <div v-else>
             <ServersGrid v-if="view === 'grid'" :servers="servers" @action="onAction" />
