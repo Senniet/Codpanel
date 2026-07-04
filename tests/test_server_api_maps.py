@@ -1,5 +1,3 @@
-from pathlib import Path
-
 from fastapi.testclient import TestClient
 
 from app.main import app
@@ -18,7 +16,7 @@ def test_get_server_maps_returns_maps_list(monkeypatch):
     )
 
     monkeypatch.setattr("app.api.server.config_loader.get", lambda server_id: server if server_id == "cod1" else None)
-    monkeypatch.setattr("app.api.server.GameContentService.get_maps", lambda server_path: ["mp_alpha", "mp_beta"])
+    monkeypatch.setattr("app.api.server.GameContentService.get_maps", lambda _: ["mp_alpha", "mp_beta"])
 
     response = client.get("/api/v1/server/cod1/maps")
 
