@@ -3,13 +3,25 @@
     <div v-for="s in servers" :key="s.id">
       <BaseCard>
         <div class="flex items-start justify-between">
-          <div>
-            <div class="text-lg font-semibold">{{ s.name }}</div>
-            <div class="text-sm text-gray-500">{{ s.game }} — {{ s.map }}</div>
-            <div class="mt-2 text-sm text-gray-600">Players: {{ s.players ?? 0 }}</div>
-            <div class="mt-1 text-sm text-gray-600">CPU: {{ s.cpu ?? 0 }}% • RAM: {{ s.ram ?? 0 }}%</div>
+          <div class="flex-1 min-w-0">
+            <div class="text-lg font-semibold truncate">{{ s.name }}</div>
+            <div class="text-sm text-gray-500 mt-0.5">
+              {{ s.map ?? '—' }}<span v-if="s.version"> · v{{ s.version }}</span>
+            </div>
+            <div class="mt-2 text-sm text-gray-600 dark:text-gray-400">
+              Players: {{ s.players !== null && s.players !== undefined ? s.players : '—' }}
+              <span v-if="s.max_players !== null && s.max_players !== undefined"> / {{ s.max_players }}</span>
+            </div>
+            <div class="mt-1 text-sm text-gray-600 dark:text-gray-400">
+              CPU: {{ s.cpu_percent !== null && s.cpu_percent !== undefined ? s.cpu_percent + '%' : '—' }}
+              · RAM: {{ s.memory_mb !== null && s.memory_mb !== undefined ? s.memory_mb.toFixed(0) + ' MB' : '—' }}
+            </div>
+            <div class="mt-1 text-sm text-gray-600 dark:text-gray-400">
+              Uptime: {{ s.uptime ?? '—' }}
+              <span v-if="s.pid !== null && s.pid !== undefined"> · PID: {{ s.pid }}</span>
+            </div>
           </div>
-          <div class="flex flex-col items-end gap-2">
+          <div class="flex flex-col items-end gap-2 ml-4 flex-shrink-0">
             <BaseBadge :variant="statusVariant(s.status)">{{ s.status }}</BaseBadge>
             <div class="flex flex-col gap-1">
               <BaseButton @click="$emit('action', { server: s, action: 'start' })">Start</BaseButton>
@@ -36,11 +48,11 @@ import { defineProps } from 'vue'
 const props = defineProps<{ servers: Server[] }>()
 const router = useRouter()
 
-function statusVariant(s: string | undefined) {
+function statusVariant(s: string | undefined): 'success' | 'warning' | 'danger' | 'default' {
   if (!s) return 'default'
   if (s === 'running') return 'success'
-  if (s === 'stopped') return 'default'
-  if (s === 'crashed') return 'danger'
+  if (s === 'starting') return 'warning'
+  if (s === 'failed' || s === 'crashed') return 'danger'
   return 'default'
 }
 

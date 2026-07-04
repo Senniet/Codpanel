@@ -21,11 +21,32 @@
         </div>
 
         <div v-if="loading" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          <div v-for="i in 6" :key="i" class="h-40 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
+          <div v-for="i in 6" :key="i" class="bg-white dark:bg-gray-800 rounded-lg p-4 animate-pulse">
+            <div class="flex items-start justify-between">
+              <div class="flex-1 space-y-2">
+                <div class="h-5 bg-gray-200 dark:bg-gray-700 rounded w-2/3"></div>
+                <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
+                <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
+                <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
+                <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-2/3"></div>
+              </div>
+              <div class="ml-4 flex flex-col items-end gap-2 flex-shrink-0">
+                <div class="h-5 w-16 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                <div class="h-7 w-14 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                <div class="h-7 w-14 bg-gray-200 dark:bg-gray-700 rounded"></div>
+              </div>
+            </div>
+          </div>
         </div>
 
         <div v-else>
-          <div v-if="servers.length === 0" class="text-sm text-gray-500">No servers found.</div>
+          <div v-if="servers.length === 0" class="flex flex-col items-center justify-center py-12 text-center">
+            <svg class="w-12 h-12 text-gray-400 dark:text-gray-500 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01" />
+            </svg>
+            <p class="text-gray-500 dark:text-gray-400 mb-2">No servers found.</p>
+            <router-link to="/settings" aria-label="Configure servers in Settings" class="text-blue-600 hover:underline text-sm dark:text-blue-400">Configure in Settings</router-link>
+          </div>
 
           <div v-else>
             <ServersGrid v-if="view === 'grid'" :servers="servers" @action="onAction" />
@@ -60,7 +81,7 @@ import BaseModal from '@/components/base/BaseModal.vue'
 import ServersGrid from '@/features/servers/ServersGrid.vue'
 import ServersTable from '@/features/servers/ServersTable.vue'
 
-import { ref, watch, onMounted } from 'vue'
+import { ref, watch, onMounted, onUnmounted } from 'vue'
 import { serversService } from '@/services/servers.service'
 import type { Server } from '@/types/server'
 
@@ -75,6 +96,8 @@ const modalServer = ref<Server | null>(null)
 const modalAction = ref<{ key: string; label: string } | null>(null)
 const actionError = ref('')
 
+let pollTimer: ReturnType<typeof setInterval> | null = null
+
 async function load() {
   loading.value = true
   try {
@@ -86,10 +109,24 @@ async function load() {
   }
 }
 
-onMounted(load)
+async function pollLoad() {
+  try {
+    servers.value = await serversService.list({ q: q.value || undefined, status: status.value || undefined })
+  } catch (e: any) {
+    console.error('Failed to poll servers', e)
+  }
+}
+
+onMounted(() => {
+  load()
+  pollTimer = setInterval(pollLoad, 5000)
+})
+
+onUnmounted(() => {
+  if (pollTimer) clearInterval(pollTimer)
+})
 
 watch([q, status], () => {
-  // small debounce could be added
   load()
 })
 
