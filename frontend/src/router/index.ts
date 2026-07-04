@@ -8,14 +8,14 @@ import ServersView from '@/features/servers/ServersView.vue'
 import SettingsView from '@/features/settings/SettingsView.vue'
 
 const routes = [
-  { path: '/', redirect: '/dashboard' },
-  { path: '/login', name: 'Login', component: LoginView },
   {
-    path: '/dashboard',
+    path: '/',
     name: 'Dashboard',
     component: DashboardView,
     meta: { requiresAuth: true }
   },
+  { path: '/login', name: 'Login', component: LoginView },
+  { path: '/dashboard', redirect: '/' },
   {
     path: '/servers',
     name: 'Servers',

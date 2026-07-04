@@ -1,89 +1,22 @@
 <template>
   <AppLayout>
     <template #default>
-      <div class="space-y-6">
-        <!-- Metrics grid -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
-          <BaseCard v-for="card in metricCards" :key="card.key">
-            <div class="flex items-start justify-between">
-              <div>
-                <div class="text-sm text-gray-500 dark:text-gray-400">{{ card.title }}</div>
-                <div class="mt-2 text-2xl font-semibold">{{ card.display }}</div>
-                <div v-if="card.sub" class="text-sm text-gray-500 dark:text-gray-400">{{ card.sub }}</div>
-              </div>
-              <div class="ml-4 flex items-center">
-                <BaseBadge :variant="card.badgeVariant">{{ card.badge }}</BaseBadge>
-              </div>
-            </div>
-            <div class="mt-3">
-              <div v-if="loadingOverview" class="h-3 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
-              <div v-else class="h-3 bg-gray-100 dark:bg-gray-800 rounded overflow-hidden">
-                <div class="h-3 bg-blue-600 dark:bg-blue-400" :style="{ width: card.percent + '%' }"></div>
-              </div>
-            </div>
-          </BaseCard>
+      <div class="space-y-4">
+        <div class="flex items-center justify-between">
+          <h1 class="text-xl font-semibold">Dashboard</h1>
+          <div class="text-sm text-gray-500">Refreshes every 5 seconds</div>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          <!-- Recent Activity -->
-          <div class="lg:col-span-2">
-            <BaseCard title="Recent Activity">
-              <div v-if="loadingActivity" class="space-y-3">
-                <div v-for="i in 5" :key="i" class="h-12 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
-              </div>
-              <div v-else>
-                <div v-if="activity.length === 0" class="text-sm text-gray-500">No recent activity.</div>
-                <div v-else class="space-y-3">
-                  <div v-for="act in activity" :key="act.id" class="flex items-start justify-between">
-                    <div>
-                      <div class="text-sm font-medium">{{ act.message }}</div>
-                      <div class="text-xs text-gray-500">{{ formatDate(act.created_at) }}</div>
-                    </div>
-                    <div>
-                      <BaseBadge :variant="badgeFor(act.type)">{{ act.type }}</BaseBadge>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </BaseCard>
+        <div v-if="loading" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div v-for="i in 6" :key="i" class="h-36 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
+        </div>
 
-            <!-- Quick Actions -->
-            <BaseCard title="Quick Actions" class="mt-4">
-              <div v-if="loadingActions" class="space-y-3">
-                <div v-for="i in 3" :key="i" class="h-12 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
-              </div>
-              <div v-else>
-                <div v-if="quickActions.length === 0" class="text-sm text-gray-500">No quick actions available.</div>
-                <div v-else class="space-y-3">
-                  <div v-for="a in quickActions" :key="a.id" class="flex items-center justify-between">
-                    <div>
-                      <div class="font-medium">{{ a.name }}</div>
-                      <div class="text-sm text-gray-500">{{ a.description }}</div>
-                    </div>
-                    <div>
-                      <BaseButton @click="runAction(a)">Run</BaseButton>
-                    </div>
-                  </div>
-                </div>
-                <div v-if="actionMessage" class="mt-2 text-sm text-gray-700 dark:text-gray-300">{{ actionMessage }}</div>
-              </div>
-            </BaseCard>
-          </div>
+        <div v-else-if="error" class="text-sm text-red-600">{{ error }}</div>
 
-          <!-- Latest Logs -->
-          <div>
-            <BaseCard title="Latest Logs">
-              <div v-if="loadingLogs" class="space-y-2">
-                <div v-for="i in 6" :key="i" class="h-8 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
-              </div>
-              <div v-else>
-                <div v-if="logs.length === 0" class="text-sm text-gray-500">No logs available.</div>
-                <div v-else>
-                  <BaseTable :headers="['Time', 'Level', 'Message']" :rows="logRows" :rowKey="r => r.id" />
-                </div>
-              </div>
-            </BaseCard>
-          </div>
+        <div v-else-if="servers.length === 0" class="text-sm text-gray-500">No servers found.</div>
+
+        <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <ServerCard v-for="(server, index) in servers" :key="server.id ?? `${server.name}-${index}`" :server="server" />
         </div>
       </div>
     </template>
@@ -91,167 +24,39 @@
 </template>
 
 <script setup lang="ts">
+import { onMounted, onUnmounted, ref } from 'vue'
 import AppLayout from '@/layouts/AppLayout.vue'
-import BaseCard from '@/components/base/BaseCard.vue'
-import BaseBadge from '@/components/base/BaseBadge.vue'
-import BaseButton from '@/components/base/BaseButton.vue'
-import BaseTable from '@/components/base/BaseTable.vue'
-import BaseSpinner from '@/components/base/BaseSpinner.vue'
+import ServerCard from '@/components/ServerCard.vue'
+import { serversService } from '@/services/servers.service'
+import type { Server } from '@/types/server'
 
-import { ref, computed, onMounted } from 'vue'
-import { dashboardService } from '@/services/dashboard.service'
-import type { DashboardOverview, ActivityItem, QuickAction, LogEntry } from '@/types/dashboard'
+const servers = ref<Server[]>([])
+const loading = ref(false)
+const error = ref('')
 
-const overview = ref<DashboardOverview | null>(null)
-const activity = ref<ActivityItem[]>([])
-const quickActions = ref<QuickAction[]>([])
-const logs = ref<LogEntry[]>([])
+let pollTimer: ReturnType<typeof setInterval> | null = null
 
-const loadingOverview = ref(false)
-const loadingActivity = ref(false)
-const loadingActions = ref(false)
-const loadingLogs = ref(false)
-
-const actionMessage = ref('')
+async function loadServers() {
+  loading.value = servers.value.length === 0
+  error.value = ''
+  try {
+    servers.value = await serversService.list()
+  } catch (e: any) {
+    error.value = e?.message || 'Failed to load servers'
+  } finally {
+    loading.value = false
+  }
+}
 
 onMounted(async () => {
-  await loadOverview()
-  loadActivity()
-  loadQuickActions()
-  loadLogs()
+  await loadServers()
+  pollTimer = setInterval(loadServers, 5000)
 })
 
-async function loadOverview() {
-  loadingOverview.value = true
-  try {
-    overview.value = await dashboardService.getOverview()
-  } catch (e) {
-    console.error('Failed to load overview', e)
-  } finally {
-    loadingOverview.value = false
+onUnmounted(() => {
+  if (pollTimer) {
+    clearInterval(pollTimer)
+    pollTimer = null
   }
-}
-
-async function loadActivity() {
-  loadingActivity.value = true
-  try {
-    activity.value = await dashboardService.getRecentActivity()
-  } catch (e) {
-    console.error('Failed to load activity', e)
-  } finally {
-    loadingActivity.value = false
-  }
-}
-
-async function loadQuickActions() {
-  loadingActions.value = true
-  try {
-    quickActions.value = await dashboardService.getQuickActions()
-  } catch (e) {
-    console.error('Failed to load quick actions', e)
-  } finally {
-    loadingActions.value = false
-  }
-}
-
-async function loadLogs() {
-  loadingLogs.value = true
-  try {
-    logs.value = await dashboardService.getLatestLogs()
-  } catch (e) {
-    console.error('Failed to load logs', e)
-  } finally {
-    loadingLogs.value = false
-  }
-}
-
-const metricCards = computed(() => {
-  const o = overview.value
-  return [
-    {
-      key: 'total',
-      title: 'Total Servers',
-      display: o ? o.totalServers : '—',
-      sub: '',
-      badge: o ? String(o.totalServers) : '-',
-      badgeVariant: 'default',
-      percent: o ? Math.min(100, (o.totalServers ? (o.onlineServers / Math.max(1, o.totalServers)) * 100 : 0)) : 0
-    },
-    {
-      key: 'online',
-      title: 'Online Servers',
-      display: o ? o.onlineServers : '—',
-      sub: '',
-      badge: o ? String(o.onlineServers) : '-',
-      badgeVariant: 'success',
-      percent: o ? Math.min(100, (o.onlineServers / Math.max(1, o.totalServers)) * 100) : 0
-    },
-    {
-      key: 'offline',
-      title: 'Offline Servers',
-      display: o ? o.offlineServers : '—',
-      sub: '',
-      badge: o ? String(o.offlineServers) : '-',
-      badgeVariant: 'danger',
-      percent: o ? Math.min(100, (o.offlineServers / Math.max(1, o.totalServers)) * 100) : 0
-    },
-    {
-      key: 'players',
-      title: 'Connected Players',
-      display: o ? o.connectedPlayers : '—',
-      sub: '',
-      badge: o ? String(o.connectedPlayers) : '-',
-      badgeVariant: 'default',
-      percent: o ? Math.min(100, (o.connectedPlayers / Math.max(1, o.totalServers * 100)) * 100) : 0
-    },
-    {
-      key: 'cpu',
-      title: 'CPU Usage',
-      display: o ? o.cpuUsagePercent + '%' : '—',
-      sub: '',
-      badge: o ? o.cpuUsagePercent + '%' : '-',
-      badgeVariant: 'default',
-      percent: o ? o.cpuUsagePercent : 0
-    },
-    {
-      key: 'memory',
-      title: 'Memory Usage',
-      display: o ? o.memoryUsagePercent + '%' : '—',
-      sub: '',
-      badge: o ? o.memoryUsagePercent + '%' : '-',
-      badgeVariant: 'default',
-      percent: o ? o.memoryUsagePercent : 0
-    }
-  ]
 })
-
-function formatDate(iso: string) {
-  try {
-    return new Date(iso).toLocaleString()
-  } catch (e) {
-    return iso
-  }
-}
-
-function badgeFor(type: string) {
-  if (type === 'warning') return 'warning'
-  if (type === 'error') return 'danger'
-  return 'default'
-}
-
-function logRows() {
-  return logs.value.map(l => ({ id: l.id, time: new Date(l.timestamp).toLocaleString(), level: l.level, message: l.message }))
-}
-
-async function runAction(a: QuickAction) {
-  actionMessage.value = `Running action: ${a.name}...`
-  try {
-    // In future we will call the real endpoint: dashboardService.runQuickAction(a.id)
-    setTimeout(() => {
-      actionMessage.value = `Action \"${a.name}\" executed (mock).`
-    }, 600)
-  } catch (e: any) {
-    actionMessage.value = e?.message || 'Action failed'
-  }
-}
 </script>
