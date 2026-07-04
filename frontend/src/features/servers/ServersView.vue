@@ -145,7 +145,7 @@ function onAction(payload: { server: Server; action: string }) {
 async function onStartConfirm(map: string) {
   if (!startServer.value) return
   try {
-    await serversService.performAction(startServer.value.id, 'start')
+    await serversService.performAction(startServer.value.id, 'start', map)
     showStartModal.value = false
     await load()
   } catch (e: any) {

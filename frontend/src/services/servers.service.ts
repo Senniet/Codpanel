@@ -26,9 +26,9 @@ export const serversService = {
     return await get<Server>(`/servers/${id}`)
   },
 
-  async performAction(id: string | number, action: 'start' | 'stop' | 'restart' | 'kill'): Promise<void> {
-    // POST /servers/:id/actions { action }
-    await post(`/servers/${id}/actions`, { action })
+  async performAction(id: string | number, action: 'start' | 'stop' | 'restart' | 'kill', map?: string): Promise<void> {
+    // POST /servers/:id/actions { action, map? }
+    await post(`/servers/${id}/actions`, map ? { action, map } : { action })
   },
 
   // Tabs
