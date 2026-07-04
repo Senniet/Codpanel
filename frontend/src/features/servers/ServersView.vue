@@ -21,11 +21,23 @@
         </div>
 
         <div v-if="loading" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          <div v-for="i in 6" :key="i" class="h-40 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
+          <div v-for="i in 6" :key="i" class="rounded-lg border border-gray-200 dark:border-gray-700 p-4 space-y-3">
+            <div class="h-5 w-1/2 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
+            <div class="h-4 w-3/4 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
+            <div class="h-4 w-2/3 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
+            <div class="h-4 w-1/2 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
+            <div class="h-8 w-full bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
+          </div>
         </div>
 
         <div v-else>
-          <div v-if="servers.length === 0" class="text-sm text-gray-500">No servers found.</div>
+          <div
+            v-if="servers.length === 0"
+            class="rounded-lg border border-dashed border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 p-8 text-center"
+          >
+            <div class="text-lg font-medium text-gray-700 dark:text-gray-200">No servers found</div>
+            <div class="mt-2 text-sm text-gray-500">Try changing the search query or status filter.</div>
+          </div>
 
           <div v-else>
             <ServersGrid v-if="view === 'grid'" :servers="servers" @action="onAction" />
