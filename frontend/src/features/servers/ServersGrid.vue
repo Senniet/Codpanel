@@ -3,13 +3,40 @@
     <div v-for="s in servers" :key="s.id">
       <BaseCard>
         <div class="flex items-start justify-between">
-          <div>
-            <div class="text-lg font-semibold">{{ s.name }}</div>
-            <div class="text-sm text-gray-500">{{ s.game }} — {{ s.map }}</div>
-            <div class="mt-2 text-sm text-gray-600">Players: {{ s.players ?? 0 }}</div>
-            <div class="mt-1 text-sm text-gray-600">CPU: {{ s.cpu ?? 0 }}% • RAM: {{ s.ram ?? 0 }}%</div>
+          <div class="flex-1 min-w-0 pr-2">
+            <div class="text-lg font-semibold truncate">{{ s.name }}</div>
+            <div class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+              <span>Map: <span class="text-gray-700 dark:text-gray-200">{{ s.map ?? '—' }}</span></span>
+            </div>
+            <div class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+              <span>Version: <span class="text-gray-700 dark:text-gray-200">{{ s.version ?? '—' }}</span></span>
+            </div>
+            <div class="mt-2 grid grid-cols-2 gap-x-4 gap-y-1 text-sm text-gray-600 dark:text-gray-300">
+              <div>
+                Players:
+                <span class="font-medium">
+                  {{ s.players !== null && s.players !== undefined ? s.players : '—' }}/{{ s.max_players !== null && s.max_players !== undefined ? s.max_players : '—' }}
+                </span>
+              </div>
+              <div>
+                CPU:
+                <span class="font-medium">{{ s.cpu_percent !== null && s.cpu_percent !== undefined ? Math.round(s.cpu_percent) + '%' : '—' }}</span>
+              </div>
+              <div>
+                RAM:
+                <span class="font-medium">{{ s.memory_mb !== null && s.memory_mb !== undefined ? Math.round(s.memory_mb) + ' MB' : '—' }}</span>
+              </div>
+              <div>
+                PID:
+                <span class="font-medium">{{ s.pid ?? '—' }}</span>
+              </div>
+              <div class="col-span-2">
+                Uptime:
+                <span class="font-medium">{{ s.uptime ?? '—' }}</span>
+              </div>
+            </div>
           </div>
-          <div class="flex flex-col items-end gap-2">
+          <div class="flex flex-col items-end gap-2 shrink-0">
             <BaseBadge :variant="statusVariant(s.status)">{{ s.status }}</BaseBadge>
             <div class="flex flex-col gap-1">
               <BaseButton @click="$emit('action', { server: s, action: 'start' })">Start</BaseButton>
@@ -39,8 +66,8 @@ const router = useRouter()
 function statusVariant(s: string | undefined) {
   if (!s) return 'default'
   if (s === 'running') return 'success'
-  if (s === 'stopped') return 'default'
-  if (s === 'crashed') return 'danger'
+  if (s === 'starting') return 'warning'
+  if (s === 'failed' || s === 'crashed') return 'danger'
   return 'default'
 }
 
