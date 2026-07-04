@@ -45,6 +45,14 @@
           </div>
         </div>
 
+        <StartServerDialog
+          v-if="showStartModal && startServer"
+          :serverId="String(startServer.id)"
+          :serverName="startServer.name"
+          @confirm="onStartConfirm"
+          @cancel="showStartModal = false"
+        />
+
         <BaseModal v-model:show="showActionModal">
           <template #default>
             <div class="space-y-4">
@@ -71,6 +79,7 @@ import BaseButton from '@/components/base/BaseButton.vue'
 import BaseModal from '@/components/base/BaseModal.vue'
 import ServersGrid from '@/features/servers/ServersGrid.vue'
 import ServersTable from '@/features/servers/ServersTable.vue'
+import StartServerDialog from '@/features/servers/StartServerDialog.vue'
 
 import { ref, watch, onMounted } from 'vue'
 import { serversService } from '@/services/servers.service'
@@ -86,6 +95,9 @@ const showActionModal = ref(false)
 const modalServer = ref<Server | null>(null)
 const modalAction = ref<{ key: string; label: string } | null>(null)
 const actionError = ref('')
+
+const showStartModal = ref(false)
+const startServer = ref<Server | null>(null)
 
 async function load() {
   loading.value = true
@@ -118,10 +130,28 @@ function onFilterChange() {
 }
 
 function onAction(payload: { server: Server; action: string }) {
+  if (payload.action === 'start') {
+    startServer.value = payload.server
+    actionError.value = ''
+    showStartModal.value = true
+    return
+  }
   modalServer.value = payload.server
   modalAction.value = { key: payload.action, label: payload.action.charAt(0).toUpperCase() + payload.action.slice(1) }
   actionError.value = ''
   showActionModal.value = true
+}
+
+async function onStartConfirm(map: string) {
+  if (!startServer.value) return
+  try {
+    await serversService.performAction(startServer.value.id, 'start')
+    showStartModal.value = false
+    await load()
+  } catch (e: any) {
+    actionError.value = e?.message || 'Action failed'
+    showStartModal.value = false
+  }
 }
 
 async function confirmAction() {
